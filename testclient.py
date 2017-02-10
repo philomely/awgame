@@ -1,17 +1,35 @@
-#!/usr/bin/env python
+import websocket
+import _thread
+import time
+import json
 
-import socket
+def on_message(ws, message):
+    print("on_message")
+    print(message)
+
+def on_error(ws, error):
+    print(error)
+
+def on_close(ws):
+    print("### closed ###")
+
+def on_open(ws):
+    def run(*args):
+        #message = {}
+        ws.send(json.dumps({
+            'userid': 'aaron',
+            'msgid': "create_room",
+            'msgdata': ""
+        }))
+        #ws.close()
+    _thread.start_new_thread(run, ())
 
 
-TCP_IP = '127.0.0.1'
-TCP_PORT = 16000
-BUFFER_SIZE = 1024
-MESSAGE = "Hello, World!"
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
-s.send(MESSAGE.encode())
-data = s.recv(BUFFER_SIZE)
-s.close()
-
-print(str(data))
+if __name__ == "__main__":
+    websocket.enableTrace(True)
+    ws = websocket.WebSocketApp("ws://127.0.0.1:8000/aw",
+                              on_message = on_message,
+                              on_error = on_error,
+                              on_close = on_close)
+    ws.on_open = on_open
+    ws.run_forever()
